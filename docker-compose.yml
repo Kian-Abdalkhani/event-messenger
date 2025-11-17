@@ -1,0 +1,14 @@
+services:
+  congrats-app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist submissions and event data
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Los_Angeles # Set your timezone
+      - GO_ENV=production
+    restart: unless-stopped

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Messages</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    "
+  >
+    <table
+      role="presentation"
+      style="width: 100%; border-collapse: collapse; background-color: #f5f5f5"
+    >
+      <tr>
+        <td style="padding: 40px 20px">
+          <!-- Main Container -->
+          <table
+            role="presentation"
+            style="
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+                  padding: 40px 30px;
+                  text-align: center;
+                "
+              >
+                <h1
+                  style="
+                    margin: 0;
+                    color: #ffffff;
+                    font-size: 28px;
+                    font-weight: bold;
+                  "
+                >
+                  Your Special Day!
+                </h1>
+                <p
+                  style="
+                    margin: 15px 0 0 0;
+                    color: #ffffff;
+                    font-size: 16px;
+                    opacity: 0.95;
+                  "
+                >
+                  {{.EventName}}
+                </p>
+              </td>
+            </tr>
+
+            <!-- Introduction -->
+            <tr>
+              <td style="padding: 30px 30px 20px 30px">
+                <p
+                  style="
+                    margin: 0 0 15px 0;
+                    color: #333333;
+                    font-size: 16px;
+                    line-height: 1.6;
+                  "
+                >
+                  Dear {{.RecipientName}},
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    color: #555555;
+                    font-size: 16px;
+                    line-height: 1.6;
+                  "
+                >
+                  We're thrilled to share that your friends, family, and
+                  colleagues have sent you
+                  <strong style="color: #4caf50"
+                    >{{.TotalCount}} special message{{if ne .TotalCount
+                    1}}s{{end}}</strong
+                  >
+                  for your event! Here's what they had to say:
+                </p>
+              </td>
+            </tr>
+
+            <!-- Messages Section -->
+            {{range .Submissions}}
+            <tr>
+              <td style="padding: 0 30px 25px 30px">
+                <!-- Message Card -->
+                <table
+                  role="presentation"
+                  style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    border-left: 4px solid #4caf50;
+                    overflow: hidden;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 20px">
+                      <!-- Sender Name -->
+                      <p
+                        style="
+                          margin: 0 0 12px 0;
+                          color: #333333;
+                          font-size: 15px;
+                          font-weight: bold;
+                        "
+                      >
+                        From: {{.From}}
+                      </p>
+
+                      <!-- Message Content -->
+                      <div
+                        style="
+                          margin: 0 0 12px 0;
+                          background-color: #ffffff;
+                          border-radius: 6px;
+                          border: 1px solid #e0e0e0;
+                          text-align: left;
+                        "
+                      >
+                        <p
+                          style="
+                            margin: 0;
+                            color: #555555;
+                            font-size: 12px;
+                            line-height: 1.6;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                            word-break: break-word;
+                            overflow-wrap: break-word;
+                            text-align: left;
+                            direction: ltr;
+                            max-width: 100%;
+                          "
+                        >
+                          {{- .MessageText -}}
+                        </p>
+                      </div>
+
+                      {{if .ImageDataURI}}
+                      <!-- Attached Image -->
+                      <div style="margin: 15px 0 0 0">
+                        <img
+                          src="{{.ImageDataURI}}"
+                          alt="Shared image from {{.From}}"
+                          style="
+                            max-width: 100%;
+                            height: auto;
+                            border-radius: 6px;
+                            display: block;
+                            border: 1px solid #e0e0e0;
+                          "
+                        />
+                      </div>
+                      {{end}}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            {{end}}
+
+            <!-- Footer Note -->
+            <tr>
+              <td style="padding: 20px 30px 10px 30px; text-align: center">
+                <p
+                  style="
+                    margin: 0;
+                    color: #555555;
+                    font-size: 15px;
+                    line-height: 1.6;
+                  "
+                >
+                  These special messages were collected just for you!
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  padding: 20px 30px 30px 30px;
+                  text-align: center;
+                  border-top: 1px solid #e0e0e0;
+                "
+              >
+                {{if .CoordinatorName}}
+                <p style="margin: 15px 0 0 0; color: #999999; font-size: 13px">
+                  Event coordinated by: {{.CoordinatorName}}
+                </p>
+                {{end}}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Extra Footer -->
+          <table
+            role="presentation"
+            style="max-width: 600px; margin: 20px auto 0 auto"
+          >
+            <tr>
+              <td style="text-align: center; padding: 0 20px">
+                <p
+                  style="
+                    margin: 0;
+                    color: #999999;
+                    font-size: 12px;
+                    line-height: 1.5;
+                  "
+                >
+                  Made for your special occasion
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+data/app.db
+data/app.db-shm
+data/app.db-wal
+
+# Uploaded files
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+event_messenger
+event-messenger
+
+# Go test and coverage
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Logs
+*.log
+logs/
+
+# Air (Go live reload) temp files
+tmp/

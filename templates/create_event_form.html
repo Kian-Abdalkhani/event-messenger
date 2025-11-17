@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Event Creation Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 15px;
+        background-color: #f5f5f5;
+        font-size: 16px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 1.5em;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1em;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2196f3;
+        text-decoration: none;
+        font-size: 1em;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .form-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
+      }
+
+      .form-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+
+      .form-header h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .form-header p {
+        color: #666;
+        margin: 0;
+      }
+
+      .form-section {
+        margin-bottom: 30px;
+      }
+
+      .form-section h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        color: #333;
+        margin-bottom: 8px;
+        font-weight: bold;
+        font-size: 0.95em;
+      }
+
+      .label-optional {
+        font-weight: normal;
+        color: #999;
+        font-size: 0.9em;
+      }
+
+      input[type="text"],
+      input[type="date"],
+      input[type="email"],
+      input[type="tel"],
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus,
+      input[type="date"]:focus,
+      input[type="email"]:focus,
+      input[type="tel"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #2196f3;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .field-hint {
+        display: block;
+        color: #999;
+        font-size: 0.85em;
+        margin-top: 5px;
+      }
+
+      .form-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+      }
+
+      .btn {
+        padding: 14px 30px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 1em;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-align: center;
+        display: block;
+        min-height: 44px;
+      }
+
+      .btn-primary {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #45a049;
+      }
+
+      .btn-secondary {
+        background-color: #757575;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #616161;
+      }
+
+      .required {
+        color: #f44336;
+      }
+
+      .info-box {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+      }
+
+      .info-box p {
+        margin: 0;
+        color: #1976d2;
+        font-size: 0.95em;
+      }
+
+      /* Tablet and up */
+      @media (min-width: 768px) {
+        body {
+          padding: 20px;
+        }
+
+        header {
+          margin-bottom: 40px;
+        }
+
+        h1 {
+          font-size: 2em;
+        }
+
+        .subtitle {
+          font-size: 1.1em;
+        }
+
+        .form-container {
+          padding: 30px;
+          max-width: 800px;
+        }
+
+        .form-actions {
+          flex-direction: row;
+          justify-content: flex-end;
+          gap: 15px;
+        }
+
+        .btn {
+          display: inline-block;
+          min-width: 150px;
+        }
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
+        body {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .form-container {
+          padding: 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/" class="back-link">← Back to Events</a>
+
+    <header>
+      <h1>Create New Event</h1>
+      <p class="subtitle">
+        Set up a new event to collect congratulations messages
+      </p>
+    </header>
+
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Event Details</h2>
+        <p>Fill in the information below to create your event</p>
+      </div>
+
+      <form action="/events/create/submit" method="POST">
+        <!-- Basic Event Information -->
+        <div class="form-section">
+          <h3>Basic Information</h3>
+
+          <div class="form-group">
+            <label for="name">Event Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              placeholder="e.g., Graduation 2025, Sarah's Birthday"
+            />
+            <span class="field-hint">A descriptive name for this event</span>
+          </div>
+
+          <div class="form-group">
+            <label for="description"
+              >Description <span class="label-optional">(optional)</span></label
+            >
+            <textarea
+              id="description"
+              name="description"
+              placeholder="Describe the event and what kind of messages you'd like to collect..."
+            ></textarea>
+            <span class="field-hint"
+              >Provide additional details about the event</span
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="event_date"
+              >Event Date <span class="required">*</span></label
+            >
+            <input type="date" id="event_date" name="event_date" required />
+            <span class="field-hint"
+              >The date when the event will take place</span
+            >
+          </div>
+        </div>
+
+        <!-- Recipient Information -->
+        <div class="form-section">
+          <h3>Recipient Information</h3>
+          <div class="info-box">
+            <p>
+              The recipient will receive a notification with a link to view all
+              collected messages
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="recipientName"
+              >Recipient Name <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              id="recipientName"
+              name="recipientName"
+              required
+              placeholder="e.g., Sarah Johnson"
+            />
+            <span class="field-hint">Name of the person being celebrated</span>
+          </div>
+
+          <div class="form-group">
+            <label for="recipientContact"
+              >Recipient Email Address <span class="required">*</span></label
+            >
+            <input
+              type="tel"
+              id="recipientContact"
+              name="recipientContact"
+              required
+              placeholder="e.g., Ellie@yahoo.com"
+            />
+            <span class="field-hint">Email to send the notification</span>
+          </div>
+        </div>
+
+        <!-- Coordinator Information -->
+        <div class="form-section">
+          <h3>Coordinator Information</h3>
+
+          <div class="form-group">
+            <label for="coordinator"
+              >Coordinator Name
+              <span class="label-optional">(optional)</span></label
+            >
+            <input
+              type="text"
+              id="coordinator"
+              name="coordinator"
+              placeholder="e.g., John Smith"
+            />
+            <span class="field-hint">Person managing this event</span>
+          </div>
+
+          <div class="form-group">
+            <label for="coordinator_contact"
+              >Coordinator Email Address
+              <span class="label-optional">(optional)</span></label
+            >
+            <input
+              type="text"
+              id="coordinator_contact"
+              name="coordinator_contact"
+              placeholder="e.g., john@example.com"
+            />
+            <span class="field-hint">Email for the coordinator</span>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a href="/" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create Event</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

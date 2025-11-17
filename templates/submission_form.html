@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Event Submission Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 15px;
+        background-color: #f5f5f5;
+        font-size: 16px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 1.5em;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1em;
+      }
+
+      .form-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 1em;
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 2px dashed #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: border-color 0.3s;
+      }
+
+      input[type="file"]:hover {
+        border-color: #4caf50;
+      }
+
+      .char-count {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+      }
+
+      .char-count.over-limit {
+        color: #f44336;
+        font-weight: bold;
+      }
+
+      .submit-btn {
+        background-color: #4caf50;
+        color: white;
+        padding: 14px 32px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 1em;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 100%;
+        margin-top: 10px;
+        min-height: 44px;
+      }
+
+      .submit-btn:hover {
+        background-color: #45a049;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2196f3;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      /* Tablet and up */
+      @media (min-width: 768px) {
+        body {
+          padding: 20px;
+        }
+
+        header {
+          margin-bottom: 40px;
+        }
+
+        h1 {
+          font-size: 2em;
+        }
+
+        .subtitle {
+          font-size: 1.1em;
+        }
+
+        .form-container {
+          padding: 30px;
+          max-width: 600px;
+        }
+
+        .submit-btn {
+          font-size: 1.1em;
+        }
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
+        body {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/" class="back-link">← Back to Events</a>
+
+    <header>
+      <h1>Submit Your Message</h1>
+      <p class="subtitle">For {{.RecipientName}}'s {{.EventName}}</p>
+    </header>
+
+    <div class="form-container">
+      <form
+        action="/events/{{.EventSlug}}/submit"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="form-group">
+          <label for="name">Your Name:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            maxlength="100"
+            placeholder="Enter your name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="message">Your Message:</label>
+          <textarea
+            id="message"
+            name="message"
+            maxlength="500"
+            placeholder="Share your congratulations message..."
+            required
+          ></textarea>
+          <small id="charCount" class="char-count">0 / 500 characters</small>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Upload Image:</label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            required
+          />
+        </div>
+
+        <input type="submit" value="Submit Message" class="submit-btn" />
+      </form>
+    </div>
+    <script>
+      // Show live character count
+      const messageField = document.getElementById("message");
+      const charCount = document.getElementById("charCount");
+
+      messageField.addEventListener("input", function (event) {
+        const currentLength = this.value.length;
+        const maxLength = 500;
+
+        // Update character count
+        charCount.textContent = this.value.length + " / 500 characters";
+
+        // Conditional to add or remove red css styling based on character count
+        if (currentLength > maxLength) {
+          charCount.classList.add("over-limit");
+        } else {
+          charCount.classList.remove("over-limit");
+        }
+      });
+    </script>
+  </body>
+</html>
