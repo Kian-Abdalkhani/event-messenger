@@ -46,3 +46,6 @@ logs/
 
 # Air (Go live reload) temp files
 tmp/
+
+# github copilot instructions
+.github/copilot-instructions.md
