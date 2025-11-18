@@ -1,5 +1,6 @@
 services:
-  congrats-app:
+  event-messenger:
+    container_name: event-messenger
     build: .
     ports:
       - "8080:8080"
