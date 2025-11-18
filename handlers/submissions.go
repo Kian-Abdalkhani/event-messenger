@@ -228,7 +228,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 
 	renderTemplate(w, "templates/success.html", data)
 
-	log.Printf("Received submission - Name: %s, Message: %s, Image: %s", name, message, filename)
+	log.Printf("Received submission - Name: %s", name)
 }
 
 func ViewSubmissionsByEvent(w http.ResponseWriter, r *http.Request, slug string) {
