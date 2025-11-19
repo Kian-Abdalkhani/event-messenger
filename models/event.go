@@ -116,7 +116,7 @@ func GetEventsReadyForDeletion(graceDays int) ([]Event, error) {
       AND DATE(email_sent_at) <= DATE(?, ?)
     `
 
-	cutoffDate := time.Now().AddDate(0, 0, -graceDays)
+	cutoffDate := time.Now().UTC().AddDate(0, 0, -graceDays)
 	rows, err := db.DB.Query(query, cutoffDate)
 	if err != nil {
 		return nil, fmt.Errorf("error querying events for deletion: %v", err)
@@ -170,6 +170,10 @@ func (e *Event) DeleteEvent() error {
 }
 
 func (e *Event) SaveEvent() error {
+	// converts datetimes to UTC datetime for consistency
+	eventDateUTC := e.EventDate.UTC()
+	createdAtUTC := e.CreatedAt.UTC()
+
 	insertSQL := `INSERT INTO events (
         name, slug, description, event_date, active, 
         coordinator, coordinator_contact, 
@@ -179,10 +183,10 @@ func (e *Event) SaveEvent() error {
 
 	result, err := db.DB.Exec(
 		insertSQL,
-		e.Name, e.Slug, e.Description, e.EventDate, e.Active,
+		e.Name, e.Slug, e.Description, eventDateUTC, e.Active,
 		e.Coordinator, e.CoordinatorContact,
 		e.RecipientName, e.RecipientEmail, e.WebsiteLink,
-		e.CreatedAt,
+		createdAtUTC,
 	)
 	if err != nil {
 		return err
@@ -217,7 +221,7 @@ func (e *Event) MarkEmailSent() error {
 	WHERE id = ?;
 	`
 
-	_, err := db.DB.Exec(query, time.Now(), e.ID)
+	_, err := db.DB.Exec(query, time.Now().UTC(), e.ID)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)
 	}
@@ -226,12 +230,19 @@ func (e *Event) MarkEmailSent() error {
 }
 
 func GetEventsForToday() ([]Event, error) {
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
+	startOfDayUTC := startOfDay.UTC()
+	endOfDayUTC := endOfDay.UTC()
+
 	query := `
 	SELECT * FROM events
-	WHERE DATE(event_date) = DATE(?)
+	WHERE event_date >= ? AND event_date < ?
 	`
 
-	rows, err := db.DB.Query(query, time.Now())
+	rows, err := db.DB.Query(query, startOfDayUTC, endOfDayUTC)
 	if err != nil {
 		return nil, fmt.Errorf("error querying event previews: %v", err)
 	}
@@ -398,6 +409,8 @@ func GetEventBySlug(slug string) (*Event, error) {
 }
 
 func (e *Event) Update() error {
+	eventDateUTC := e.EventDate.UTC()
+
 	updateSQL := `UPDATE events SET 
         name = ?, description = ?, event_date = ?, active = ?,
         coordinator = ?, coordinator_contact = ?,
@@ -406,7 +419,7 @@ func (e *Event) Update() error {
 
 	_, err := db.DB.Exec(
 		updateSQL,
-		e.Name, e.Description, e.EventDate, e.Active,
+		e.Name, e.Description, eventDateUTC, e.Active,
 		e.Coordinator, e.CoordinatorContact,
 		e.RecipientName, e.RecipientEmail, e.WebsiteLink,
 		e.ID,

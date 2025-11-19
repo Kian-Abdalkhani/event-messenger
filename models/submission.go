@@ -21,7 +21,7 @@ type Submission struct {
 func (s *Submission) Save() error {
 	insertSQL := `INSERT INTO submissions (event_id, name, message, filename, created_at) VALUES (?, ?, ?, ?, ?)`
 
-	result, err := db.DB.Exec(insertSQL, s.EventID, s.Name, s.Message, s.Filename, time.Now())
+	result, err := db.DB.Exec(insertSQL, s.EventID, s.Name, s.Message, s.Filename, time.Now().UTC())
 	if err != nil {
 		return err
 	}
