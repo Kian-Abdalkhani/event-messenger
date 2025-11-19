@@ -1,10 +1,12 @@
 package scheduler
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 	"time"
 
-	"congrats-project.com/models"
+	"event-messenger.com/models"
 )
 
 // runs at set intervals for sending notifications on event dates
@@ -24,7 +26,7 @@ func StartDailyNotifications() {
 	// iterate through each event that is dated for today
 	for _, event := range events {
 		if event.EmailSent {
-			log.Printf("Skipping event %s - email already sent", event.Name)
+			slog.Info(fmt.Sprintf("Skipping event %s - email already sent", event.Name))
 			continue
 		}
 		err := sendEventNotification(&event)
@@ -37,11 +39,11 @@ func StartDailyNotifications() {
 }
 
 func StartScheduler(hourToRun int) {
-	log.Printf("Scheduler started - will run daily at %d:00", hourToRun)
+	slog.Info(fmt.Sprintf("Scheduler started - will run daily at %d:00", hourToRun))
 
 	// Run immediately at startup
 	go func() {
-		log.Println("Running initial notification check on startup...")
+		slog.Debug("Running initial notification check on startup...")
 		StartDailyNotifications()
 	}()
 
@@ -59,11 +61,11 @@ func StartScheduler(hourToRun int) {
 			}
 
 			duration := time.Until(nextRun)
-			log.Printf("Next notification check scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration)
+			slog.Debug(fmt.Sprintf("Next notification check scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration))
 
 			time.Sleep(duration)
 
-			log.Println("Running scheduled notification check...")
+			slog.Debug("Running scheduled notification check...")
 			StartDailyNotifications()
 		}
 	}()

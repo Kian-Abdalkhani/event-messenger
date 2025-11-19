@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"congrats-project.com/models"
+	"event-messenger.com/models"
 )
 
 // GenerateSlug creates a URL-friendly slug from a string

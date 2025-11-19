@@ -6,9 +6,8 @@ import (
 	"log"
 	"time"
 
+	"event-messenger.com/db"
 	_ "github.com/mattn/go-sqlite3"
-
-	"congrats-project.com/db"
 )
 
 type Event struct {

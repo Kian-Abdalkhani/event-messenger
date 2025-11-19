@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"congrats-project.com/handlers"
-	"congrats-project.com/models"
-	"congrats-project.com/utils"
+	"event-messenger.com/handlers"
+	"event-messenger.com/models"
+	"event-messenger.com/utils"
 )
 
 // Set a cap so that email doesn't reach SMTP limit (25MB limit)

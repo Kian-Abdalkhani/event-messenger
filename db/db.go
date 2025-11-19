@@ -2,9 +2,13 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"log/slog"
+	"os"
+	"path/filepath"
 
-	"congrats-project.com/config"
+	"event-messenger.com/config"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -13,6 +17,13 @@ var DB *sql.DB
 
 // initDB initializes the database and creates the table if it doesn't exist
 func InitDB() {
+
+	// Create a directory if it does not already exist
+	dir := filepath.Dir(config.App.DBPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		panic(fmt.Sprintf("Could not create database directory: %v", err))
+	}
+
 	var err error
 	DB, err = sql.Open("sqlite3", config.App.DBPath)
 
@@ -81,5 +92,5 @@ func createTables() {
 		log.Printf("Warning: could not create indexes: %v", err)
 	}
 
-	log.Println("Database initialized successfully")
+	slog.Debug("Database initialized successfully")
 }

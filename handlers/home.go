@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"congrats-project.com/models"
+	"event-messenger.com/models"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +21,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Events: events,
 	}
 
-	renderTemplate(w, "templates/home.html", data)
+	renderTemplate(w, "./templates/home.html", data)
 
 }

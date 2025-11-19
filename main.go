@@ -2,14 +2,16 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	"congrats-project.com/config"
-	"congrats-project.com/db"
-	"congrats-project.com/routes"
-	"congrats-project.com/scheduler"
+	"event-messenger.com/config"
+	"event-messenger.com/db"
+	"event-messenger.com/logger"
+	"event-messenger.com/routes"
+	"event-messenger.com/scheduler"
 	"github.com/joho/godotenv"
 )
 
@@ -25,13 +27,18 @@ func init() {
 
 	if env == "" || env == "development" {
 		// Load .env file if in development mode
-		if err := godotenv.Load(); err != nil {
-			log.Println("Warning: Error loading .env file:", err)
+		err := godotenv.Load()
+
+		// Initialize logger
+		logger.InitLogger()
+
+		if err != nil {
+			slog.Debug("Warning: Error loading .env file", "error", err)
 		} else {
-			log.Printf("Development mode: Loaded .env file")
+			slog.Debug("Development mode: Loaded .env file")
 		}
 	} else {
-		log.Printf("Running in %s mode: Using system environment variables\n", env)
+		slog.Debug("Running in mode: Using system environment variables", "env", env)
 	}
 
 	// Load web configurations
@@ -63,6 +70,6 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	log.Println("Server starting on: " + config.App.BaseURL)
+	slog.Info("Server starting on: " + config.App.BaseURL)
 	log.Fatal(s.ListenAndServe())
 }

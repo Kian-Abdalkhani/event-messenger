@@ -24,7 +24,7 @@ func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}
 }
 
 func RenderEmailTemplate(data any) (string, error) {
-	tmpl, err := template.ParseFiles("templates/email_notification.html")
+	tmpl, err := template.ParseFiles("./templates/email_notification.html")
 	if err != nil {
 		log.Printf("Email template parse error: %v", err)
 		return "", err

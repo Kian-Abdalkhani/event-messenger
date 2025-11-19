@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"congrats-project.com/handlers"
+	"event-messenger.com/handlers"
 )
 
 func RegisterRoutes() *http.ServeMux {

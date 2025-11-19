@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"congrats-project.com/models"
-	"congrats-project.com/utils"
+	"event-messenger.com/models"
+	"event-messenger.com/utils"
 )
 
 func CreateEventForm(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ func CreateEventForm(w http.ResponseWriter, r *http.Request) {
 		Events: events,
 	}
 
-	renderTemplate(w, "templates/create_event_form.html", data)
+	renderTemplate(w, "./templates/create_event_form.html", data)
 
 }
 

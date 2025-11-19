@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"congrats-project.com/db"
+	"event-messenger.com/db"
 )
 
 type Submission struct {

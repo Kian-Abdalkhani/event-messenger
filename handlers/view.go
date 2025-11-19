@@ -1,6 +1,6 @@
 package handlers
 
-import "congrats-project.com/models"
+import "event-messenger.com/models"
 
 type HomePageData struct {
 	Events []models.EventPreview

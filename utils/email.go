@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"congrats-project.com/config"
+	"event-messenger.com/config"
 )
 
 func SendEmailNotification(toEmail, subject, htmlContent string) error {

@@ -12,4 +12,5 @@ services:
     environment:
       - TZ=America/Los_Angeles # Set your timezone
       - GO_ENV=production
+      - DEBUG=true
     restart: unless-stopped

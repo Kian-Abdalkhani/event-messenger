@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"congrats-project.com/models"
+	"event-messenger.com/models"
 	"golang.org/x/image/draw"
 )
 
@@ -66,7 +66,7 @@ func SubmissionFormHandler(w http.ResponseWriter, r *http.Request, slug string) 
 		EventSlug:     slug,
 	}
 
-	renderTemplate(w, "templates/submission_form.html", data)
+	renderTemplate(w, "./templates/submission_form.html", data)
 
 }
 
@@ -226,7 +226,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	fileInfo, _ := dst.Stat()
 	log.Printf("Successfully saved processed image: %s (size: %.2f KB)", filename, float64(fileInfo.Size())/1024)
 
-	renderTemplate(w, "templates/success.html", data)
+	renderTemplate(w, "./templates/success.html", data)
 
 	log.Printf("Received submission - Name: %s", name)
 }
@@ -239,6 +239,6 @@ func ViewSubmissionsByEvent(w http.ResponseWriter, r *http.Request, slug string)
 		return
 	}
 
-	renderTemplate(w, "templates/view_messages.html", submissions)
+	renderTemplate(w, "./templates/view_messages.html", submissions)
 
 }

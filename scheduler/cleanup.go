@@ -1,15 +1,16 @@
 package scheduler
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"time"
 
-	"congrats-project.com/models"
+	"event-messenger.com/models"
 )
 
 // StartCleanupScheduler runs weekly to clean up old events
 func StartCleanupScheduler(graceDays int) {
-	log.Printf("Cleanup scheduler started - will run weekly with %d day grace period", graceDays)
+	slog.Debug(fmt.Sprintf("Cleanup scheduler started - will run weekly with %d day grace period", graceDays))
 
 	go func() {
 		for {
@@ -23,11 +24,11 @@ func StartCleanupScheduler(graceDays int) {
 			}
 
 			duration := time.Until(nextRun)
-			log.Printf("Next cleanup scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration)
+			slog.Debug(fmt.Sprintf("Next cleanup scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration))
 
 			time.Sleep(duration)
 
-			log.Println("Running scheduled cleanup...")
+			slog.Debug("Running scheduled cleanup...")
 			cleanupOldEvents(graceDays)
 		}
 	}()
@@ -36,28 +37,28 @@ func StartCleanupScheduler(graceDays int) {
 func cleanupOldEvents(graceDays int) {
 	events, err := models.GetEventsReadyForDeletion(graceDays)
 	if err != nil {
-		log.Printf("Error retrieving events for cleanup: %v", err)
+		slog.Error(fmt.Sprintf("Error retrieving events for cleanup: %v", err))
 		return
 	}
 
 	if len(events) == 0 {
-		log.Println("No events ready for cleanup")
+		slog.Debug("No events ready for cleanup")
 		return
 	}
 
-	log.Printf("Found %d events ready for cleanup", len(events))
+	slog.Debug(fmt.Sprintf("Found %d events ready for cleanup", len(events)))
 
 	for _, event := range events {
-		log.Printf("Deleting event: %s (sent %d days ago)",
+		slog.Info(fmt.Sprintf("Deleting event: %s (sent %d days ago)",
 			event.Name,
-			int(time.Since(event.EmailSentAt.Time).Hours()/24))
+			int(time.Since(event.EmailSentAt.Time).Hours()/24)))
 
 		err := event.DeleteEvent()
 		if err != nil {
-			log.Printf("Failed to delete event %s: %v", event.Name, err)
+			slog.Error(fmt.Sprintf("Failed to delete event %s: %v", event.Name, err))
 			continue
 		}
 
-		log.Printf("Successfully deleted event: %s", event.Name)
+		slog.Debug("Successfully deleted event: ", "name", event.Name)
 	}
 }
