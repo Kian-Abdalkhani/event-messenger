@@ -1,6 +1,7 @@
 services:
   event-messenger:
     container_name: event-messenger
+    image: event-messenger:latest
     build: .
     ports:
       - "8080:8080"
