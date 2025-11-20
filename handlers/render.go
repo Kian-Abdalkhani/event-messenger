@@ -12,12 +12,13 @@ import (
 var baseDir string
 
 func init() {
-	// Get the executable's directory
-	ex, err := os.Executable()
+	// Use current working directory instead of executable path
+	// This works for both 'go run' and compiled binaries
+	var err error
+	baseDir, err = os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	baseDir = filepath.Dir(ex)
 }
 
 func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}) {

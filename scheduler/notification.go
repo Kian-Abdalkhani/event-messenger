@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +16,7 @@ import (
 )
 
 // Set a cap so that email doesn't reach SMTP limit (25MB limit)
-const maxSubmissionsPerEmail = 150
+const maxSubmissionsPerEmail = 100
 
 type SubmissionEmailData struct {
 	MessageText  string
@@ -107,7 +108,7 @@ func sendEventNotification(event *models.Event) error {
 		return fmt.Errorf("failed to mark email as sent: %w", err)
 	}
 
-	log.Printf("Successfully sent notification for event: %s to %s", event.Name, event.RecipientEmail)
+	slog.Info(fmt.Sprintf("Successfully sent notification for event: %s to %s", event.Name, event.RecipientEmail))
 	return nil
 }
 
