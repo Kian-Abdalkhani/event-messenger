@@ -4,12 +4,28 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"text/template"
 )
 
+var baseDir string
+
+func init() {
+	// Get the executable's directory
+	ex, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	baseDir = filepath.Dir(ex)
+}
+
 func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}) {
+	// Make path absolute relative to executable
+	fullPath := filepath.Join(baseDir, templatePath)
+
 	// Read and parse the HTML template
-	tmpl, err := template.ParseFiles(templatePath)
+	tmpl, err := template.ParseFiles(fullPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Template error: %v", err)
@@ -24,7 +40,10 @@ func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}
 }
 
 func RenderEmailTemplate(data any) (string, error) {
-	tmpl, err := template.ParseFiles("./templates/email_notification.html")
+	// Make path absolute relative to executable
+	fullPath := filepath.Join(baseDir, "templates/email_notification.html")
+
+	tmpl, err := template.ParseFiles(fullPath)
 	if err != nil {
 		log.Printf("Email template parse error: %v", err)
 		return "", err
