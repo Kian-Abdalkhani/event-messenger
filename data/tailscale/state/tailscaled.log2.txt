@@ -1,1 +1,0 @@
-{"logtail":{"client_time":"2025-11-24T20:52:11.901517505Z","proc_id":1062466456,"proc_seq":214},"v":1,"text":"Accept: TCP{[fd7a:115c:a1e0:ab12:4843:cd96:626f:140a]:50312 > [fd7a:115c:a1e0::c301:7f34]:41641} 72 tcp non-syn\n"}
