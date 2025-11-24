@@ -10,14 +10,12 @@ import (
 func RegisterRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Public routes - Home/Landing
-	mux.HandleFunc("/", handlers.HomeHandler) // Landing page listing active events
+	// LOCAL ONLY routes
+	mux.HandleFunc("/", requireInternal(handlers.HomeHandler))
+	mux.HandleFunc("/events/create", requireInternal(handlers.CreateEventForm))
+	mux.HandleFunc("/events/create/submit", requireInternal(handlers.CreateEvent))
 
-	// Event management routes (no auth required for LAN service)
-	mux.HandleFunc("/events/create", handlers.CreateEventForm)
-	mux.HandleFunc("/events/create/submit", handlers.CreateEvent)
-
-	// Event-specific public routes
+	// PUBLIC routes
 	mux.HandleFunc("/events/", eventRouteHandler) // Handles all /events/* routes
 
 	// Static file serving
@@ -25,6 +23,17 @@ func RegisterRoutes() *http.ServeMux {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	return mux
+}
+
+// Middleware that checks to ensure user is local and not tailscale funnel
+func requireInternal(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Tailscale-Funnel-Request") != "" {
+			http.Error(w, "Access Denied", http.StatusForbidden)
+			return
+		}
+		next(w, r)
+	}
 }
 
 // eventRouteHandler routes all event-specific requests
@@ -57,6 +66,9 @@ func eventRouteHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+	case "created":
+		// GET /events/graduation-2025/created - Event creation success page
+		handlers.EventCreatedSuccess(w, r)
 
 	default:
 		http.NotFound(w, r)

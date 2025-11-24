@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Created Successfully</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 700px;
+        width: 100%;
+        padding: 40px;
+      }
+
+      .success-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .success-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #2d3748;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #718096;
+        font-size: 16px;
+      }
+
+      .event-details {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 30px 0;
+      }
+
+      .event-details h2 {
+        color: #2d3748;
+        font-size: 22px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+      }
+
+      .detail-row {
+        display: flex;
+        margin-bottom: 16px;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: #4a5568;
+        min-width: 140px;
+      }
+
+      .detail-value {
+        color: #2d3748;
+        flex: 1;
+      }
+
+      .share-section {
+        background: #edf2f7;
+        border: 2px dashed #cbd5e0;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 30px 0;
+      }
+
+      .share-section h3 {
+        color: #2d3748;
+        font-size: 18px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .share-icon {
+        font-size: 24px;
+      }
+
+      .share-description {
+        color: #718096;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .url-container {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .url-input {
+        flex: 1;
+        padding: 14px;
+        border: 2px solid #cbd5e0;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        color: #2d3748;
+        background: white;
+        transition: border-color 0.2s;
+      }
+
+      .url-input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .copy-btn {
+        padding: 14px 28px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .copy-btn:active {
+        transform: translateY(0);
+      }
+
+      .copy-btn.copied {
+        background: #48bb78;
+      }
+
+      .feedback {
+        color: #48bb78;
+        font-size: 14px;
+        font-weight: 600;
+        display: none;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .feedback.show {
+        display: flex;
+      }
+
+      .actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 30px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+      }
+
+      .btn-secondary:hover {
+        background: #f7fafc;
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 24px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .url-container {
+          flex-direction: column;
+        }
+
+        .copy-btn {
+          width: 100%;
+        }
+
+        .actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+          text-align: center;
+        }
+
+        .detail-row {
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .detail-label {
+          min-width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="success-header">
+        <h1>Event Created Successfully!</h1>
+        <p class="subtitle">Your event is ready to receive messages</p>
+      </div>
+
+      <div class="event-details">
+        <h2>{{.Event.Name}}</h2>
+        {{if .Event.Description}}
+        <div class="detail-row">
+          <span class="detail-label">Description:</span>
+          <span class="detail-value">{{.Event.Description}}</span>
+        </div>
+        {{end}}
+        <div class="detail-row">
+          <span class="detail-label">Event Date:</span>
+          <span class="detail-value"
+            >{{.Event.EventDate.Format "Monday, January 2, 2006"}}</span
+          >
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Recipient:</span>
+          <span class="detail-value">{{.Event.RecipientName}}</span>
+        </div>
+        {{if .Event.Coordinator}}
+        <div class="detail-row">
+          <span class="detail-label">Coordinator:</span>
+          <span class="detail-value">{{.Event.Coordinator}}</span>
+        </div>
+        {{end}}
+      </div>
+
+      <div class="share-section">
+        <h3>Share This Link:</h3>
+        <p class="share-description">
+          Share this public URL with people outside your network so they can
+          submit congratulatory messages and photos:
+        </p>
+        <div class="url-container">
+          <input
+            type="text"
+            class="url-input"
+            value="{{.FunnelURL}}"
+            readonly
+            id="funnelUrl"
+          />
+          <button class="copy-btn" onclick="copyToClipboard()" id="copyBtn">
+            Copy Link
+          </button>
+        </div>
+        <div class="feedback" id="copyFeedback">
+          <span>✓</span>
+          <span>Copied to clipboard!</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/" class="btn btn-primary">View All Events</a>
+        <a href="/events/create" class="btn btn-secondary"
+          >Create Another Event</a
+        >
+      </div>
+    </div>
+
+    <script>
+      function copyToClipboard() {
+        const input = document.getElementById("funnelUrl");
+        const button = document.getElementById("copyBtn");
+        const feedback = document.getElementById("copyFeedback");
+
+        // Select and copy the text
+        input.select();
+        input.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+          // Modern clipboard API
+          navigator.clipboard
+            .writeText(input.value)
+            .then(() => {
+              showCopyFeedback();
+            })
+            .catch(() => {
+              // Fallback for older browsers
+              document.execCommand("copy");
+              showCopyFeedback();
+            });
+        } catch (err) {
+          // Fallback for older browsers
+          document.execCommand("copy");
+          showCopyFeedback();
+        }
+
+        function showCopyFeedback() {
+          // Update button
+          button.textContent = "Copied!";
+          button.classList.add("copied");
+
+          // Show feedback message
+          feedback.classList.add("show");
+
+          // Reset after 2 seconds
+          setTimeout(() => {
+            button.textContent = "Copy Link";
+            button.classList.remove("copied");
+            feedback.classList.remove("show");
+          }, 2000);
+        }
+      }
+
+      // Allow copying by clicking the input field
+      document
+        .getElementById("funnelUrl")
+        .addEventListener("click", function () {
+          this.select();
+        });
+    </script>
+  </body>
+</html>

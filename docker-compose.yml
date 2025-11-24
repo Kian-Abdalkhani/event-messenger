@@ -3,15 +3,38 @@ services:
     container_name: event-messenger
     image: event-messenger:latest
     build: .
-    ports:
-      - "8080:8080"
+    network_mode: service:tailscale # Share Tailscale's network namespace
     volumes:
       # Persist submissions and event data
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/app/data
-    env_file:
-      - .env
     environment:
-      - TZ=America/Los_Angeles # Set your timezone
+      - TZ=America/Los_Angeles
       - GO_ENV=production
       - DEBUG=true
+      # Pass all required env vars explicitly
+      - BASE_URL=${BASE_URL}
+      - WEB_PORT=${WEB_PORT:-8080}
+      - DB_PATH=${DB_PATH:-./data/app.db}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM_EMAIL}
+    restart: unless-stopped
+  tailscale:
+    container_name: ts
+    image: tailscale/tailscale:latest
+    hostname: event-messenger-ts
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - ${PWD}/data/tailscale/state:/var/lib/tailscale
+    ports:
+      - "8080:8080"
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
     restart: unless-stopped

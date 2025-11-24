@@ -54,7 +54,7 @@ func createTables() {
         recipient_email TEXT,
 		email_sent BOOLEAN DEFAULT 0,
 		email_sent_at DATETIME,
-        website_link TEXT,
+        funnel_url TEXT UNIQUE,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     );`
 

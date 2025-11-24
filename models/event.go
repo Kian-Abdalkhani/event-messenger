@@ -24,7 +24,7 @@ type Event struct {
 	RecipientEmail string       `db:"recipient_email"`
 	EmailSent      bool         `db:"email_sent"`
 	EmailSentAt    sql.NullTime `db:"email_sent_at"`
-	WebsiteLink    string       `db:"website_link"` // Link to send recipient
+	FunnelURL      string       `db:"funnel_url"`
 	CreatedAt      time.Time    `db:"created_at"`
 }
 
@@ -69,9 +69,9 @@ func WithRecipient(name, email string) EventOption {
 	}
 }
 
-func WithWebsiteLink(link string) EventOption {
+func WithFunnelURL(url string) EventOption {
 	return func(e *Event) {
-		e.WebsiteLink = link
+		e.FunnelURL = url
 	}
 }
 
@@ -107,7 +107,7 @@ func GetEventsReadyForDeletion(graceDays int) ([]Event, error) {
     SELECT id, name, slug, description, event_date, active,
            coordinator, coordinator_contact, 
            recipient_name, recipient_email, email_sent, email_sent_at,
-           website_link, created_at
+           funnel_url, created_at
     FROM events
     WHERE email_sent = TRUE 
       AND active = FALSE
@@ -130,7 +130,7 @@ func GetEventsReadyForDeletion(graceDays int) ([]Event, error) {
 			&e.EventDate, &e.Active,
 			&e.Coordinator, &e.CoordinatorContact,
 			&e.RecipientName, &e.RecipientEmail, &e.EmailSent,
-			&e.EmailSentAt, &e.WebsiteLink, &e.CreatedAt,
+			&e.EmailSentAt, &e.FunnelURL, &e.CreatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
@@ -176,7 +176,7 @@ func (e *Event) SaveEvent() error {
 	insertSQL := `INSERT INTO events (
         name, slug, description, event_date, active, 
         coordinator, coordinator_contact, 
-        recipient_name, recipient_email, website_link, 
+        recipient_name, recipient_email, funnel_url, 
         created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -184,7 +184,7 @@ func (e *Event) SaveEvent() error {
 		insertSQL,
 		e.Name, e.Slug, e.Description, eventDateUTC, e.Active,
 		e.Coordinator, e.CoordinatorContact,
-		e.RecipientName, e.RecipientEmail, e.WebsiteLink,
+		e.RecipientName, e.RecipientEmail, e.FunnelURL,
 		createdAtUTC,
 	)
 	if err != nil {
@@ -254,7 +254,7 @@ func GetEventsForToday() ([]Event, error) {
 			&event.EventDate, &event.Active,
 			&event.Coordinator, &event.CoordinatorContact,
 			&event.RecipientName, &event.RecipientEmail, &event.EmailSent,
-			&event.EmailSentAt, &event.WebsiteLink, &event.CreatedAt)
+			&event.EmailSentAt, &event.FunnelURL, &event.CreatedAt)
 
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
@@ -313,7 +313,7 @@ func GetActiveEventPreviews() ([]EventPreview, error) {
 func GetAllActiveEvents() ([]Event, error) {
 	query := `SELECT id, name, slug, description, event_date, active,
               coordinator, coordinator_contact, 
-              recipient_name, recipient_email, website_link, created_at 
+              recipient_name, recipient_email, funnel_url, created_at 
               FROM events WHERE active = true ORDER BY event_date DESC`
 
 	rows, err := db.DB.Query(query)
@@ -329,7 +329,7 @@ func GetAllActiveEvents() ([]Event, error) {
 			&e.ID, &e.Name, &e.Slug, &e.Description,
 			&e.EventDate, &e.Active,
 			&e.Coordinator, &e.CoordinatorContact,
-			&e.RecipientName, &e.RecipientEmail, &e.WebsiteLink,
+			&e.RecipientName, &e.RecipientEmail, &e.FunnelURL,
 			&e.CreatedAt,
 		)
 		if err != nil {
@@ -351,7 +351,7 @@ func GetAllActiveEventsWithCounts() ([]EventWithCount, error) {
 	query := `SELECT 
         e.id, e.name, e.slug, e.description, e.event_date, e.active,
         e.coordinator, e.coordinator_contact, 
-        e.recipient_name, e.recipient_email, e.website_link, e.created_at,
+        e.recipient_name, e.recipient_email, e.funnel_url, e.created_at,
         COUNT(s.id) as submission_count
     FROM events e
     LEFT JOIN submissions s ON e.id = s.event_id
@@ -372,7 +372,7 @@ func GetAllActiveEventsWithCounts() ([]EventWithCount, error) {
 			&ewc.ID, &ewc.Name, &ewc.Slug, &ewc.Description,
 			&ewc.EventDate, &ewc.Active,
 			&ewc.Coordinator, &ewc.CoordinatorContact,
-			&ewc.RecipientName, &ewc.RecipientEmail, &ewc.WebsiteLink,
+			&ewc.RecipientName, &ewc.RecipientEmail, &ewc.FunnelURL,
 			&ewc.CreatedAt,
 			&ewc.SubmissionCount,
 		)
@@ -388,7 +388,7 @@ func GetAllActiveEventsWithCounts() ([]EventWithCount, error) {
 func GetEventBySlug(slug string) (*Event, error) {
 	query := `SELECT id, name, slug, description, event_date, active, 
               coordinator, coordinator_contact, 
-              recipient_name, recipient_email, website_link, created_at 
+              recipient_name, recipient_email, funnel_url, created_at 
               FROM events WHERE slug = ? AND active = true`
 
 	var e Event
@@ -396,7 +396,7 @@ func GetEventBySlug(slug string) (*Event, error) {
 		&e.ID, &e.Name, &e.Slug, &e.Description,
 		&e.EventDate, &e.Active,
 		&e.Coordinator, &e.CoordinatorContact,
-		&e.RecipientName, &e.RecipientEmail, &e.WebsiteLink,
+		&e.RecipientName, &e.RecipientEmail, &e.FunnelURL,
 		&e.CreatedAt,
 	)
 
@@ -413,14 +413,14 @@ func (e *Event) Update() error {
 	updateSQL := `UPDATE events SET 
         name = ?, description = ?, event_date = ?, active = ?,
         coordinator = ?, coordinator_contact = ?,
-        recipient_name = ?, recipient_email = ?, website_link = ?
+        recipient_name = ?, recipient_email = ?, funnel_url = ?
         WHERE id = ?`
 
 	_, err := db.DB.Exec(
 		updateSQL,
 		e.Name, e.Description, eventDateUTC, e.Active,
 		e.Coordinator, e.CoordinatorContact,
-		e.RecipientName, e.RecipientEmail, e.WebsiteLink,
+		e.RecipientName, e.RecipientEmail, e.FunnelURL,
 		e.ID,
 	)
 	return err

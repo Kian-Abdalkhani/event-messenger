@@ -49,7 +49,6 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	coordinatorContact := strings.TrimSpace(r.FormValue("coordinator_contact"))
 	recipientName := r.FormValue("recipientName")
 	recipientContact := strings.TrimSpace(r.FormValue("recipientContact"))
-	websiteLink := utils.GetEventURL(slug, r)
 
 	// Validate required fields
 	if name == "" || recipientName == "" || recipientContact == "" {
@@ -82,6 +81,28 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// finds funnel url, returns blank string if funnel is inactive
+	funnel_url, err := utils.GetFunnelURL(slug)
+	if err != nil {
+		http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
+		return
+	}
+
+	if funnel_url == "" {
+		err = utils.CreateFunnel()
+		if err != nil {
+			http.Error(w, "Error funneling server to public internet", http.StatusInternalServerError)
+			return
+		}
+
+		// retry fetching url after creating tunnel:
+		funnel_url, err = utils.GetFunnelURL(slug)
+		if err != nil {
+			http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
+			return
+		}
+
+	}
 	event := models.NewEvent(
 		name,
 		slug,
@@ -89,7 +110,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		models.WithDescription(description),
 		models.WithCoordinator(coordinator, coordinatorContact),
 		models.WithRecipient(recipientName, recipientContact),
-		models.WithWebsiteLink(websiteLink),
+		models.WithFunnelURL(funnel_url),
 	)
 
 	err = event.SaveEvent()
@@ -98,5 +119,29 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/admin/events", http.StatusSeeOther)
+	http.Redirect(w, r, "/events/"+slug+"/created", http.StatusSeeOther)
+}
+
+// New handler for event creation success
+func EventCreatedSuccess(w http.ResponseWriter, r *http.Request) {
+	// Extract slug from path: /events/{slug}/created
+	slug := strings.TrimPrefix(r.URL.Path, "/events/")
+	slug = strings.TrimSuffix(slug, "/created")
+	slug = strings.Trim(slug, "/")
+
+	event, err := models.GetEventBySlug(slug)
+	if err != nil {
+		http.Error(w, "Event not found", http.StatusNotFound)
+		return
+	}
+
+	data := struct {
+		Event     models.Event
+		FunnelURL string
+	}{
+		Event:     *event,
+		FunnelURL: event.FunnelURL,
+	}
+
+	renderTemplate(w, "./templates/event_created_success.html", data)
 }

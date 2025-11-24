@@ -23,9 +23,9 @@ WORKDIR /app
 # Install ca-certificates for HTTPS and SQLite runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
-    sqlite3 \
+    sqlite3 \ 
+    docker.io \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Copy binary from builder
 COPY --from=builder /app/event-messenger .
