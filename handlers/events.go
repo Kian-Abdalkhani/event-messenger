@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"event-messenger.com/models"
@@ -45,15 +46,28 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	slug := utils.GenerateSlug(name) // Auto-generate from name
 	description := r.FormValue("description")
 	coordinator := r.FormValue("coordinator")
-	coordinatorContact := r.FormValue("coordinator_contact")
+	coordinatorContact := strings.TrimSpace(r.FormValue("coordinator_contact"))
 	recipientName := r.FormValue("recipientName")
-	recipientContact := r.FormValue("recipientContact")
+	recipientContact := strings.TrimSpace(r.FormValue("recipientContact"))
 	websiteLink := utils.GetEventURL(slug, r)
 
 	// Validate required fields
 	if name == "" || recipientName == "" || recipientContact == "" {
 		http.Error(w, "Name, recipient name, and recipient contact are required", http.StatusBadRequest)
 		return
+	}
+
+	if utils.ValidateEmail(recipientContact); err != nil {
+		http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
+		return
+	}
+
+	if coordinatorContact != "" {
+		if utils.ValidateEmail(coordinatorContact); err != nil {
+			http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
+			return
+		}
+
 	}
 
 	eventDate, err := time.Parse("2006-01-02", r.FormValue("event_date"))

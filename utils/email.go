@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/mail"
 	"net/smtp"
 
 	"event-messenger.com/config"
@@ -35,4 +36,9 @@ func SendEmailNotification(toEmail, subject, htmlContent string) error {
 
 	fmt.Printf("Email sent successfully to: %s\n", toEmail)
 	return nil
+}
+
+func ValidateEmail(email string) error {
+	_, err := mail.ParseAddress(email)
+	return err
 }
