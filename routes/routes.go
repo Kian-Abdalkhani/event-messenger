@@ -47,7 +47,12 @@ func eventRouteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if path == "" || path == "/" {
-		// List all events
+		// Block funnel access to event list page
+		if r.Header.Get("Tailscale-Funnel-Request") != "" {
+			http.Error(w, "Access Denied", http.StatusForbidden)
+			return
+		}
+		// List all events (local only)
 		handlers.HomeHandler(w, r)
 		return
 	}

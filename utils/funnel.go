@@ -1,110 +1,97 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os/exec"
+	"io"
+	"net"
+	"net/http"
 	"strings"
-
-	"event-messenger.com/models"
+	"time"
 )
 
-func GetFunnelURL(slug string) (string, error) {
-	cmd := exec.Command(
-		"docker", "exec", "ts",
-		"tailscale", "funnel", "status",
-		"--json",
-	)
+const tailscaleSocket = "/var/run/tailscale/tailscaled.sock"
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("failed to get tailscale status: %w", err)
-	}
-
-	// Handling for blank output (no funnel active)
-	if string(output) == "{}" {
-		return "", nil
-	}
-
-	// Parse JSON to get funnel domain
-	var status map[string]any
-	if err := json.Unmarshal(output, &status); err != nil {
-		return "", fmt.Errorf("failed to parse tailscale status: %w", err)
-	}
-
-	var baseURL string
-
-	if allowFunnel, ok := status["AllowFunnel"]; ok {
-		if funnelMap, ok := allowFunnel.(map[string]any); ok {
-			for key, value := range funnelMap {
-				// Need to assert the value type as a boolean
-				if boolVal, ok := value.(bool); ok && boolVal {
-					baseURL = key
-
-					// remove port number if present
-					if idx := strings.LastIndex(baseURL, ":"); idx != -1 {
-						baseURL = baseURL[:idx]
-					}
-
-					// add in /events/ at the end
-					baseURL = "https://" + baseURL + "/events/"
-
-				}
-			}
-		}
-	}
-
-	return baseURL + slug, nil
-
+type TailscaleClient struct {
+	client *http.Client
 }
 
-// Create tailscale funnel
-func CreateFunnel() error {
-	cmd := exec.Command(
-		"docker", "exec", "ts",
-		"tailscale", "funnel",
-		"--bg",
-		"http://localhost:8080",
-	)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Failed to create funnel: - Output: %s", string(output))
-		return fmt.Errorf("funnel creation failed: %w", err)
+func NewTailscaleClient() *TailscaleClient {
+	return &TailscaleClient{
+		client: &http.Client{
+			Transport: &http.Transport{
+				DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+					var d net.Dialer
+					return d.DialContext(ctx, "unix", tailscaleSocket)
+				},
+			},
+			Timeout: 5 * time.Second,
+		},
 	}
-
-	log.Printf("Successfully created funnel Output: %s", string(output))
-	return nil
-
 }
 
-// Remove tailscale funnel when no active events remain
-func RemoveFunnel() error {
-	// Check if any other active events exist
-	events, err := models.GetAllActiveEvents()
+type tailscaleStatus struct {
+	Self struct {
+		DNSName string `json:"DNSNAME"`
+	} `json:"Self"`
+}
+
+func (tc *TailscaleClient) GetFunnelURL(slug string) (string, error) {
+	// Query Tailscale's local API for status
+	resp, err := tc.client.Get("http://local-tailscaled.sock/localapi/v0/status")
 	if err != nil {
-		log.Printf("Failed to check active events before funnel removal: %v", err)
-		return err
+		return "", fmt.Errorf("failed to query tailscale API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// If http returns bad status
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("tailscale API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	if len(events) > 0 {
-		log.Printf("Keeping funnel active: %d event(s) still active", len(events))
-		return nil
-	}
-
-	// Safe to remove - no active events
-	cmd := exec.Command(
-		"docker", "exec", "ts",
-		"tailscale", "funnel", "off",
-	)
-
-	output, err := cmd.CombinedOutput()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Failed to remove funnel: %v - Output: %s", err, string(output))
-		return fmt.Errorf("funnel removal failed: %w", err)
+		return "", fmt.Errorf("Failed to read response: %w", err)
 	}
 
-	log.Printf("All events inactive - funnel removed")
-	return nil
+	var status tailscaleStatus
+	if err := json.Unmarshal(body, &status); err != nil {
+		return "", fmt.Errorf("failed to parse status %w", err)
+	}
+
+	if status.Self.DNSName == "" {
+		return "", fmt.Errorf("tailscale not connected: no DNS name available")
+	}
+
+	// Remove trailing dot from DNSName
+	hostname := strings.TrimSuffix(status.Self.DNSName, ".")
+
+	// Construct funnel URL
+	funnelURL := fmt.Sprintf("https://%s/events/%s", hostname, slug)
+
+	return funnelURL, nil
+}
+
+func (tc *TailscaleClient) CheckFunnelActive() (bool, error) {
+	// Query serve config endpoint
+	resp, err := tc.client.Get("http://local-tailscaled.sock/localapi/v0/serve-config")
+	if err != nil {
+		// If endpoint unavailable, funnel likely not active
+		return false, nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf("failed to read serve config %w", err)
+	}
+
+	// Basic check if port 8080 is in the returned config
+	return strings.Contains(string(body), "8080"), nil
 }

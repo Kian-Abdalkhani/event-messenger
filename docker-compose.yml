@@ -3,16 +3,13 @@ services:
     container_name: event-messenger
     image: event-messenger:latest
     build: .
-    network_mode: service:tailscale # Share Tailscale's network namespace
+    network_mode: host
     volumes:
-      # Persist submissions and event data
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/app/data
+      - tailscale-socket:/var/run/tailscale
     environment:
       - TZ=America/Los_Angeles
-      - GO_ENV=production
       - DEBUG=${DEBUG}
-      # Pass all required env vars explicitly
       - BASE_URL=${BASE_URL}
       - WEB_PORT=${WEB_PORT:-8080}
       - DB_PATH=${DB_PATH:-./data/app.db}
@@ -24,17 +21,38 @@ services:
   tailscale:
     container_name: ts
     image: tailscale/tailscale:latest
-    hostname: event-messenger-ts
+    network_mode: host
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
+      - TS_SOCKET=/var/run/tailscale/tailscaled.sock
     volumes:
-      - ${PWD}/data/tailscale/state:/var/lib/tailscale
-    ports:
-      - "8080:8080"
+      - tailscale-socket:/var/run/tailscale
+      - tailscale-state:/var/lib/tailscale
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - net_admin
+    command: >
+      sh -c "
+        mkdir -p /var/run/tailscale &&
+        mkdir -p /var/lib/tailscale &&
+        tailscaled --socket=/var/run/tailscale/tailscaled.sock --state=/var/lib/tailscale/tailscaled.state &
+        sleep 5 &&
+        tailscale up --authkey=$${TS_AUTHKEY} --hostname=event-messenger-ts --accept-routes &&
+        sleep 2 &&
+        tailscale serve reset &&
+        tailscale funnel --bg --https=443 127.0.0.1:8080 &&
+        wait
+      "
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "test", "-S", "/var/run/tailscale/tailscaled.sock"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  tailscale-socket:
+  tailscale-state:

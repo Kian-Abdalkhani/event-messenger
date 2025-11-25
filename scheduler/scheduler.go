@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"event-messenger.com/models"
+	"event-messenger.com/utils"
 )
 
 // runs at set intervals for sending notifications on event dates
@@ -38,6 +39,15 @@ func StartDailyNotifications() {
 
 }
 
+func CheckFunnelActive() {
+	tc := utils.NewTailscaleClient()
+	isActive, err := tc.CheckFunnelActive()
+	if err != nil || !isActive {
+		slog.Error("Funnel is not currently active, check tailscale configuration", "error", err)
+	}
+
+}
+
 func StartScheduler(hourToRun int) {
 	slog.Info(fmt.Sprintf("Scheduler started - will run daily at %d:00", hourToRun))
 
@@ -65,8 +75,9 @@ func StartScheduler(hourToRun int) {
 
 			time.Sleep(duration)
 
-			slog.Debug("Running scheduled notification check...")
+			slog.Debug("Running scheduled tasks...")
 			StartDailyNotifications()
+			CheckFunnelActive()
 		}
 	}()
 }

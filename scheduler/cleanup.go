@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"event-messenger.com/models"
-	"event-messenger.com/utils"
 )
 
 // StartCleanupScheduler runs weekly to clean up old events
@@ -31,12 +30,6 @@ func StartCleanupScheduler(graceDays int) {
 
 			slog.Debug("Running scheduled cleanup...")
 			cleanupOldEvents(graceDays)
-
-			// Removes tailscale funnel if no active events exist
-			err := utils.RemoveFunnel()
-			if err != nil {
-				slog.Error(fmt.Sprintf("Cannot remove funnel %v", err))
-			}
 		}
 	}()
 }

@@ -76,39 +76,20 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fix: Event date should be in the future
 	if eventDate.Before(time.Now().Truncate(24 * time.Hour)) {
 		http.Error(w, "Event date must be in the future", http.StatusBadRequest)
 		return
 	}
 
-	// finds funnel url, returns blank string if funnel is inactive
-	funnel_url, err := utils.GetFunnelURL(slug)
-	// Throws error if no funnel is up, so do not return after error
+	// Retreive tailscale funnel url
+	tsClient := utils.NewTailscaleClient()
+	funnelURL, err := tsClient.GetFunnelURL(slug)
 	if err != nil {
-		slog.Debug("Searching for funnel status")
+		// Since funnel is not mandatory, log error and continue with event creation
+		slog.Error("Unable to configure tailscale tunnel", "error", err)
+		funnelURL = ""
 	}
 
-	if funnel_url == "" {
-		slog.Debug("Funnel status shows empty, restarting funnel")
-		err = utils.CreateFunnel()
-		if err != nil {
-			http.Error(w, "Error funneling server to public internet", http.StatusInternalServerError)
-			slog.Error("failed to create funnel to public internet", "error", err)
-			return
-		}
-
-		slog.Debug("Funnel successfully started, re-verifing status")
-
-		// retry fetching url after creating tunnel:
-		funnel_url, err = utils.GetFunnelURL(slug)
-		if err != nil {
-			http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
-			slog.Error("Error fetching funnel status", "error", err)
-			return
-		}
-
-	}
 	event := models.NewEvent(
 		name,
 		slug,
@@ -116,7 +97,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		models.WithDescription(description),
 		models.WithCoordinator(coordinator, coordinatorContact),
 		models.WithRecipient(recipientName, recipientContact),
-		models.WithFunnelURL(funnel_url),
+		models.WithFunnelURL(funnelURL),
 	)
 
 	err = event.SaveEvent()
