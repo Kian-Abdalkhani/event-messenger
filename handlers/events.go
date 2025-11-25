@@ -84,19 +84,21 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// finds funnel url, returns blank string if funnel is inactive
 	funnel_url, err := utils.GetFunnelURL(slug)
+	// Throws error if no funnel is up, so do not return after error
 	if err != nil {
-		http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
-		slog.Error("failed to retrieve funnel active status", "error", err)
-		return
+		slog.Debug("Searching for funnel status")
 	}
 
 	if funnel_url == "" {
+		slog.Debug("Funnel status shows empty, restarting funnel")
 		err = utils.CreateFunnel()
 		if err != nil {
 			http.Error(w, "Error funneling server to public internet", http.StatusInternalServerError)
 			slog.Error("failed to create funnel to public internet", "error", err)
 			return
 		}
+
+		slog.Debug("Funnel successfully started, re-verifing status")
 
 		// retry fetching url after creating tunnel:
 		funnel_url, err = utils.GetFunnelURL(slug)
