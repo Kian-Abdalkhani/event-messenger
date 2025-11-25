@@ -11,7 +11,7 @@ services:
     environment:
       - TZ=America/Los_Angeles
       - GO_ENV=production
-      - DEBUG=true
+      - DEBUG=${DEBUG}
       # Pass all required env vars explicitly
       - BASE_URL=${BASE_URL}
       - WEB_PORT=${WEB_PORT:-8080}
