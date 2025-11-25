@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -85,6 +86,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	funnel_url, err := utils.GetFunnelURL(slug)
 	if err != nil {
 		http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
+		slog.Error("failed to retrieve funnel active status", "error", err)
 		return
 	}
 
@@ -92,6 +94,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		err = utils.CreateFunnel()
 		if err != nil {
 			http.Error(w, "Error funneling server to public internet", http.StatusInternalServerError)
+			slog.Error("failed to create funnel to public internet", "error", err)
 			return
 		}
 
@@ -99,6 +102,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		funnel_url, err = utils.GetFunnelURL(slug)
 		if err != nil {
 			http.Error(w, "failed to retreive funnel active status", http.StatusInternalServerError)
+			slog.Error("Error fetching funnel status", "error", err)
 			return
 		}
 
