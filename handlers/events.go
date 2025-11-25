@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -15,8 +14,8 @@ func CreateEventForm(w http.ResponseWriter, r *http.Request) {
 
 	events, err := models.GetAllActiveEvents()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Error retreiving events %v", err)
+		http.Error(w, "Error retreiving events", http.StatusInternalServerError)
+		slog.Error("error retreiving events", "error", err)
 		return
 	}
 
@@ -33,12 +32,14 @@ func CreateEventForm(w http.ResponseWriter, r *http.Request) {
 func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		slog.Error("Method not allowed", "Method", r.Method)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		slog.Error("Invalid form data", "error", err)
 		return
 	}
 
@@ -54,17 +55,20 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// Validate required fields
 	if name == "" || recipientName == "" || recipientContact == "" {
 		http.Error(w, "Name, recipient name, and recipient contact are required", http.StatusBadRequest)
+		slog.Error("required field left blank in event creation form")
 		return
 	}
 
-	if utils.ValidateEmail(recipientContact); err != nil {
+	if err = utils.ValidateEmail(recipientContact); err != nil {
 		http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
+		slog.Error("Invalid recipient Email", "email", recipientContact)
 		return
 	}
 
 	if coordinatorContact != "" {
-		if utils.ValidateEmail(coordinatorContact); err != nil {
-			http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
+		if err = utils.ValidateEmail(coordinatorContact); err != nil {
+			http.Error(w, "Invalid Coordinator Email", http.StatusBadRequest)
+			slog.Error("Invalid Coordinator Email", "email", coordinatorContact)
 			return
 		}
 
@@ -73,11 +77,13 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	eventDate, err := time.Parse("2006-01-02", r.FormValue("event_date"))
 	if err != nil {
 		http.Error(w, "Invalid event date format", http.StatusBadRequest)
+		slog.Error("Invalid event date format", "event_date", r.FormValue("event_date"))
 		return
 	}
 
 	if eventDate.Before(time.Now().Truncate(24 * time.Hour)) {
 		http.Error(w, "Event date must be in the future", http.StatusBadRequest)
+		slog.Error("Event date must be in the future", "date", eventDate)
 		return
 	}
 
@@ -103,6 +109,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	err = event.SaveEvent()
 	if err != nil {
 		http.Error(w, "Failed to create event", http.StatusInternalServerError)
+		slog.Error("Failed to create event", "event_name", event.Name)
 		return
 	}
 
@@ -119,6 +126,7 @@ func EventCreatedSuccess(w http.ResponseWriter, r *http.Request) {
 	event, err := models.GetEventBySlug(slug)
 	if err != nil {
 		http.Error(w, "Event not found", http.StatusNotFound)
+		slog.Error("Event not found", "event-slug", slug)
 		return
 	}
 
