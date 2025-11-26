@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -52,7 +52,7 @@ func SubmissionFormHandler(w http.ResponseWriter, r *http.Request, slug string) 
 	event, err := models.GetEventBySlug(slug)
 	if err != nil {
 		http.Error(w, "Unable to retreive event data", http.StatusInternalServerError)
-		log.Fatal(err)
+		slog.Error("Unable to retreive event data", "error", err)
 		return
 	}
 
@@ -109,10 +109,11 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	if err != nil {
 		if err == http.ErrMissingFile {
 			http.Error(w, "Image upload is required", http.StatusBadRequest)
+			slog.Error("No image found in submission")
 			return
 		}
 		http.Error(w, "Error processing image", http.StatusInternalServerError)
-		log.Println(err)
+		slog.Error("Error processing image", "error", err)
 		return
 	}
 
@@ -138,7 +139,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 
 	if !allowedImageTypes[contentType] {
 		http.Error(w, "Only image files (JPEG, PNG, GIF, WebP) are allowed", http.StatusBadRequest)
-		log.Printf("Invalid file type: %s", contentType)
+		slog.Error("Invalid file type", "content-type", contentType)
 		return
 	}
 
@@ -146,16 +147,16 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	img, format, err := image.Decode(file)
 	if err != nil {
 		http.Error(w, "Error processing image", http.StatusInternalServerError)
-		log.Printf("Image decode error: %v", err)
+		slog.Error("Image decode error", "error", err)
 		return
 	}
-	log.Printf("Successfully decoded image format: %s", format)
+	slog.Info("Successfully decoded image format", "format", format)
 
 	// Resize if width exceeds limit
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
-	log.Printf("Original image dimensions: %dx%d", width, height)
+	slog.Info("Original image dimensions", "width", width, "height", height)
 
 	if width > MaxImageWidth {
 		// Calculate new dimensions maintaining aspect ratio
@@ -166,7 +167,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 		resized := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 		draw.CatmullRom.Scale(resized, resized.Bounds(), img, bounds, draw.Over, nil)
 		img = resized
-		log.Printf("Resized image from %dx%d to %dx%d", width, height, newWidth, newHeight)
+		slog.Info("Resized image to ", "newWidth", newWidth, "newHeight", newHeight)
 	}
 
 	var filename string
@@ -185,7 +186,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	dst, err := os.Create(filePath)
 	if err != nil {
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		log.Printf("File save error: %v", err)
+		slog.Error("File save error", "error", err)
 		return
 	}
 
@@ -195,14 +196,14 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	err = jpeg.Encode(dst, img, &jpeg.Options{Quality: 85})
 	if err != nil {
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		log.Printf("JPEG encode error: %v", err)
+		slog.Error("JPEG encode error", "error", err)
 		return
 	}
 
 	event, err := models.GetEventBySlug(slug)
 	if err != nil {
 		http.Error(w, "Unable to retreive event data", http.StatusInternalServerError)
-		log.Fatal(err)
+		slog.Error("Unable to retreive event data", "error", err)
 		return
 	}
 
@@ -210,7 +211,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	err = saveSubmission(event.ID, name, message, filename)
 	if err != nil {
 		http.Error(w, "Error saving submission to database", http.StatusInternalServerError)
-		log.Printf("Database save error: %v", err)
+		slog.Error("Database save error", "error", err)
 		return
 	}
 
@@ -224,18 +225,18 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 
 	// Get saved file size for verification
 	fileInfo, _ := dst.Stat()
-	log.Printf("Successfully saved processed image: %s (size: %.2f KB)", filename, float64(fileInfo.Size())/1024)
+	slog.Info("Successfully saved processed image: %s (size: %.2f KB)", filename, float64(fileInfo.Size())/1024)
 
 	renderTemplate(w, "./templates/success.html", data)
 
-	log.Printf("Received submission - Name: %s", name)
+	slog.Info("Received submission", "name", name)
 }
 
 func ViewSubmissionsByEvent(w http.ResponseWriter, r *http.Request, slug string) {
 	submissions, err := models.GetSubmissionsByEventSlug(slug)
 	if err != nil {
 		http.Error(w, "Error retrieving event submissions", http.StatusInternalServerError)
-		log.Printf("%v", err)
+		slog.Error("Error retreiving submissions", "error", err)
 		return
 	}
 
