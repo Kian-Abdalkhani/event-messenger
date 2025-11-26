@@ -57,13 +57,13 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if utils.ValidateEmail(recipientContact); err != nil {
+	if err = utils.ValidateEmail(recipientContact); err != nil {
 		http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
 		return
 	}
 
 	if coordinatorContact != "" {
-		if utils.ValidateEmail(coordinatorContact); err != nil {
+		if err = utils.ValidateEmail(coordinatorContact); err != nil {
 			http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
 			return
 		}
