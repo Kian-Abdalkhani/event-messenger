@@ -112,10 +112,8 @@ func GetEventsReadyForDeletion(graceDays int) ([]Event, error) {
            recipient_name, recipient_email, email_sent, email_sent_at,
            funnel_url, created_at
     FROM events
-    WHERE email_sent = TRUE 
-      AND active = FALSE
-      AND email_sent_at IS NOT NULL
-      AND DATE(email_sent_at) <= DATE(?, ?)
+    WHERE active = FALSE
+      AND DATE(event_date) <= DATE(?, ?)
     `
 
 	cutoffDate := time.Now().UTC().AddDate(0, 0, -graceDays)
@@ -194,7 +192,7 @@ func (e *Event) deleteEventImages() error {
 			continue
 		}
 
-		fileRef := filepath.Join(".data/uploads/", submission.Filename)
+		fileRef := filepath.Join("./data/uploads/", submission.Filename)
 		if _, err = os.Stat(fileRef); err != nil {
 			slog.Error("submission image not found", "event_name", e.Name, "submission_name", submission.Name, "submission_img_ref", fileRef)
 		} else {
@@ -251,10 +249,10 @@ func (e *Event) GetSubmissionCount() (int, error) {
 	return count, nil
 }
 
-func (e *Event) MarkEmailSent() error {
+func (e *Event) MarkEventInactive() error {
 	query := `
 	UPDATE events
-	SET email_sent = TRUE, active = FALSE, email_sent_at = ?
+	SET active = FALSE
 	WHERE id = ?;
 	`
 
@@ -266,20 +264,34 @@ func (e *Event) MarkEmailSent() error {
 	return nil
 }
 
-func GetEventsForToday() ([]Event, error) {
+func (e *Event) MarkEmailSent() error {
+	query := `
+	UPDATE events
+	SET email_sent = TRUE, email_sent_at = ?
+	WHERE id = ?;
+	`
+
+	_, err := db.DB.Exec(query, time.Now().UTC(), e.ID)
+	if err != nil {
+		return fmt.Errorf("error updating event: %v", err)
+	}
+
+	return nil
+}
+
+func GetActiveEventsForToday() ([]Event, error) {
 	now := time.Now()
 	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
 
-	startOfDayUTC := startOfDay.UTC()
 	endOfDayUTC := endOfDay.UTC()
 
 	query := `
 	SELECT * FROM events
-	WHERE event_date >= ? AND event_date < ?
+	WHERE event_date < ?, active = TRUE
 	`
 
-	rows, err := db.DB.Query(query, startOfDayUTC, endOfDayUTC)
+	rows, err := db.DB.Query(query, endOfDayUTC)
 	if err != nil {
 		return nil, fmt.Errorf("error querying event previews: %v", err)
 	}

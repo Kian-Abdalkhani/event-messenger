@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"time"
 
@@ -13,9 +12,9 @@ import (
 // runs at set intervals for sending notifications on event dates
 func StartDailyNotifications() {
 	// Gather events
-	events, err := models.GetEventsForToday()
+	events, err := models.GetActiveEventsForToday()
 	if err != nil {
-		log.Fatalf("scheduler could not retreive events: %v", err)
+		slog.Error("scheduler could not retreive events", "error", err)
 		return
 	}
 
@@ -28,13 +27,16 @@ func StartDailyNotifications() {
 	for _, event := range events {
 		if event.EmailSent {
 			slog.Info(fmt.Sprintf("Skipping event %s - email already sent", event.Name))
+			event.MarkEventInactive()
 			continue
 		}
 		err := sendEventNotification(&event)
 		if err != nil {
-			log.Fatalf("Could not sent notification for event: %s to %s: %v", event.Name, event.RecipientEmail, err)
+			slog.Error("Could not sent notification for event", "event_name", event.Name, "recipient", event.RecipientEmail, "error", err)
+			event.MarkEventInactive()
 			continue
 		}
+		event.MarkEventInactive()
 	}
 
 }

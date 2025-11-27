@@ -32,7 +32,7 @@ func sendEventNotification(event *models.Event) error {
 	}
 
 	if len(submissions) == 0 {
-		log.Printf("No submissions were made for this event")
+		slog.Debug("No submissions were made for this event", "event_name", event.Name)
 		return nil
 	}
 
@@ -96,8 +96,7 @@ func sendEventNotification(event *models.Event) error {
 	subject := fmt.Sprintf("Your %s Messages", event.Name)
 	err = utils.SendEmailNotification(event.RecipientEmail, subject, htmlContent)
 	if err != nil {
-		log.Printf("Failed to send email for event %s: %v", event.Name, err)
-		return fmt.Errorf("failed to send email: %w", err)
+		return err
 	}
 
 	// Mark email as sent

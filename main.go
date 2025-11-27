@@ -38,7 +38,10 @@ func init() {
 			slog.Debug("Development mode: Loaded .env file")
 		}
 	} else {
-		slog.Debug("Running in mode: Using system environment variables", "env", env)
+		// Initialize logger
+		logger.InitLogger()
+		slog.Debug("Production mode loaded")
+
 	}
 
 	// Load web configurations

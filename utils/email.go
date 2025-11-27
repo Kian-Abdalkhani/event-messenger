@@ -31,7 +31,7 @@ func SendEmailNotification(toEmail, subject, htmlContent string) error {
 	err := smtp.SendMail(addr, auth, config.App.FromEmail, []string{toEmail}, []byte(message))
 
 	if err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
+		return fmt.Errorf("failed to send email (%s to %s) : %w", config.App.SMTPUsername, toEmail, err)
 	}
 
 	fmt.Printf("Email sent successfully to: %s\n", toEmail)
