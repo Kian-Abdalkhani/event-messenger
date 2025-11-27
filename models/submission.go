@@ -56,7 +56,10 @@ func GetAllSubmissions() ([]Submission, error) {
 	return submissions, nil
 }
 
-func GetSubmissionsByEventSlug(slug string) ([]Submission, error) {
+// So function can be properly mocked in testing
+var GetSubmissionsByEventSlug = realGetSubmissionsByEventSlug
+
+func realGetSubmissionsByEventSlug(slug string) ([]Submission, error) {
 	query := `SELECT s.id, s.event_id, s.name, s.message, s.filename, s.created_at 
               FROM submissions s
               JOIN events e ON s.event_id = e.id
