@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
+	"path/filepath"
 	"time"
 
 	"event-messenger.com/db"
@@ -154,17 +157,52 @@ func (e *Event) DeleteEvent() error {
 		}
 	}
 
+	// Delete event images
+	err := e.deleteEventImages()
+	if err != nil {
+		slog.Error("Error deleting event images", "event_name", e.Name, "error", err)
+	}
+
 	query := `
 	DELETE FROM events
 	WHERE id = ?
 	`
 
-	_, err := db.DB.Exec(query, e.ID)
+	_, err = db.DB.Exec(query, e.ID)
 	if err != nil {
 		return fmt.Errorf("error deleting event: %v", err)
 	}
 
 	log.Printf("Event deleted: %s (ID: %d)", e.Name, e.ID)
+	return nil
+}
+
+func (e *Event) deleteEventImages() error {
+	submissions, err := GetSubmissionsByEventSlug(e.Slug)
+	if err != nil {
+		return err
+	}
+
+	if len(submissions) < 1 {
+		slog.Debug("no submissions found in event, skipping image cleanup", "event_name", e.Name)
+		return nil
+	}
+
+	for _, submission := range submissions {
+		if submission.Filename == "" {
+			slog.Debug("Submission has no image", "event_name", e.Name, "submission_name", submission.Name)
+			continue
+		}
+
+		fileRef := filepath.Join(".data/uploads/", submission.Filename)
+		if _, err = os.Stat(fileRef); err != nil {
+			slog.Error("submission image not found", "event_name", e.Name, "submission_name", submission.Name, "submission_img_ref", fileRef)
+		} else {
+			os.Remove(fileRef)
+		}
+
+	}
+
 	return nil
 }
 
