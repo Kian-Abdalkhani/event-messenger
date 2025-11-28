@@ -41,10 +41,10 @@ services:
         mkdir -p /var/lib/tailscale &&
         tailscaled --socket=/var/run/tailscale/tailscaled.sock --state=/var/lib/tailscale/tailscaled.state &
         sleep 5 &&
-        tailscale up --authkey=$${TS_AUTHKEY} --hostname=event-messenger-ts --accept-routes &&
+        tailscale up --authkey=${TS_AUTHKEY} --hostname=${TS_HOSTNAME} --accept-routes &&
         sleep 2 &&
         tailscale serve reset &&
-        tailscale funnel --bg --https=443 127.0.0.1:8080 &&
+        tailscale funnel --bg ${WEB_PORT} &&
         wait
       "
     restart: unless-stopped
