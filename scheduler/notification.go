@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"event-messenger.com/emailutil"
 	"event-messenger.com/handlers"
 	"event-messenger.com/models"
-	"event-messenger.com/utils"
 )
 
 // Set a cap so that email doesn't reach SMTP limit (25MB limit)
@@ -94,7 +94,7 @@ func sendEventNotification(event *models.Event) error {
 
 	// Send email
 	subject := fmt.Sprintf("Your %s Messages", event.Name)
-	err = utils.SendEmailNotification(event.RecipientEmail, subject, htmlContent)
+	err = emailutil.SendEmailNotification(event.RecipientEmail, subject, htmlContent)
 	if err != nil {
 		return err
 	}

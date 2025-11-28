@@ -5,11 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"event-messenger.com/utils"
 )
 
 // Helper to create dummy image file
 func createDummyImage(filename string) error {
-	path := filepath.Join(".data/uploads", filename)
+	path := utils.ProjectPath("data", "uploads", filename)
 	os.MkdirAll(filepath.Dir(path), 0755)
 	f, err := os.Create(path)
 	if err != nil {
@@ -22,7 +24,7 @@ func createDummyImage(filename string) error {
 
 // Helper to check if file exists
 func fileExists(filename string) bool {
-	_, err := os.Stat(filepath.Join(".data/uploads", filename))
+	_, err := os.Stat(utils.ProjectPath("data", "uploads", filename))
 	return err == nil
 }
 
@@ -34,8 +36,8 @@ func TestDeleteEventImages_RemovesFiles(t *testing.T) {
 	createDummyImage(img2)
 
 	// Remove images from directory if test does not
-	defer os.Remove(filepath.Join(".data/uploads", img1))
-	defer os.Remove(filepath.Join(".data/uploads", img2))
+	defer os.Remove(utils.ProjectPath("data", "uploads", img1))
+	defer os.Remove(utils.ProjectPath("data", "uploads", img2))
 
 	// Patch GetSubmissionsByEventSlug
 	GetSubmissionsByEventSlug = func(slug string) ([]Submission, error) {

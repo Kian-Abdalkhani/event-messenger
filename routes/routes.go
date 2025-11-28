@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"event-messenger.com/handlers"
+	"event-messenger.com/utils"
 )
 
 func RegisterRoutes() *http.ServeMux {
@@ -19,8 +20,8 @@ func RegisterRoutes() *http.ServeMux {
 	mux.HandleFunc("/events/", eventRouteHandler) // Handles all /events/* routes
 
 	// Static file serving
-	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./data/uploads"))))
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(utils.ProjectPath("data", "uploads")))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(utils.ProjectPath("static")))))
 
 	return mux
 }

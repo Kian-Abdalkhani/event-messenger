@@ -6,10 +6,10 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"time"
 
 	"event-messenger.com/db"
+	"event-messenger.com/utils"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -192,7 +192,7 @@ func (e *Event) deleteEventImages() error {
 			continue
 		}
 
-		fileRef := filepath.Join("./data/uploads/", submission.Filename)
+		fileRef := utils.ProjectPath("data", "uploads", submission.Filename)
 		if _, err = os.Stat(fileRef); err != nil {
 			slog.Error("submission image not found", "event_name", e.Name, "submission_name", submission.Name, "submission_img_ref", fileRef)
 		} else {
@@ -256,7 +256,7 @@ func (e *Event) MarkEventInactive() error {
 	WHERE id = ?;
 	`
 
-	_, err := db.DB.Exec(query, time.Now().UTC(), e.ID)
+	_, err := db.DB.Exec(query, e.ID)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)
 	}
@@ -288,7 +288,7 @@ func GetActiveEventsForToday() ([]Event, error) {
 
 	query := `
 	SELECT * FROM events
-	WHERE event_date < ?, active = TRUE
+	WHERE event_date < ? AND active = TRUE
 	`
 
 	rows, err := db.DB.Query(query, endOfDayUTC)
