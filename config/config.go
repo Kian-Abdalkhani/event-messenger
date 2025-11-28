@@ -2,8 +2,9 @@ package config
 
 import (
 	"os"
-	"path/filepath"
 	"strconv"
+
+	"event-messenger.com/utils"
 )
 
 type AppConfig struct {
@@ -37,7 +38,7 @@ func LoadConfigs() {
 		AppConfig: AppConfig{
 			BaseURL:    getEnv("BASE_URL", "http://localhost:8080"),
 			ServerPort: getEnv("WEB_PORT", "8080"),
-			DBPath:     getEnv("DB_PATH", filepath.Join("data", "app.db")),
+			DBPath:     getEnv("DB_PATH", utils.ProjectPath("data", "app.db")),
 		},
 		EmailConfig: EmailConfig{
 			SMTPServer:   getEnv("SMTP_SERVER", "smtp.gmail.com"),

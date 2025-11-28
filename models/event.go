@@ -256,7 +256,7 @@ func (e *Event) MarkEventInactive() error {
 	WHERE id = ?;
 	`
 
-	_, err := db.DB.Exec(query, time.Now().UTC(), e.ID)
+	_, err := db.DB.Exec(query, e.ID)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)
 	}
@@ -288,7 +288,7 @@ func GetActiveEventsForToday() ([]Event, error) {
 
 	query := `
 	SELECT * FROM events
-	WHERE event_date < ?, active = TRUE
+	WHERE event_date < ? AND active = TRUE
 	`
 
 	rows, err := db.DB.Query(query, endOfDayUTC)

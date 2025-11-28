@@ -5,33 +5,20 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"path/filepath"
 	"text/template"
 
 	"event-messenger.com/utils"
 )
 
-var baseDir string
-
-func init() {
-	// Use current working directory instead of executable path
-	// This works for both 'go run' and compiled binaries
-	var err error
-	baseDir, err = os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}) {
+func renderTemplate(w http.ResponseWriter, templatePath string, data any) {
 	// Check if it is an absolute path
 	var fullPath string
 	if filepath.IsAbs(templatePath) {
 		fullPath = templatePath
 	} else {
 		slog.Error("Ensure template path is absolute", "templatePath", templatePath)
-		fullPath = utils.ProjectPath(templatePath)
+		// fullPath = utils.ProjectPath(templatePath)
 	}
 
 	// Read and parse the HTML template

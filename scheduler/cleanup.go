@@ -24,7 +24,7 @@ func StartCleanupScheduler(graceDays int) {
 			}
 
 			duration := time.Until(nextRun)
-			slog.Debug(fmt.Sprintf("Next cleanup scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration))
+			slog.Debug(fmt.Sprintf("Next cleanup scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration.Round(time.Second)))
 
 			time.Sleep(duration)
 

@@ -3,8 +3,25 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 )
+
+func TestGetRootDir(t *testing.T) {
+	root := GetRootDir()
+	if runtime.GOOS == "windows" {
+		// Should be something like "C:\"
+		if !strings.HasSuffix(root, string(os.PathSeparator)) || !strings.Contains(root, ":") {
+			t.Errorf("Windows root dir invalid: %s", root)
+		}
+	} else {
+		// Should be "/"
+		if root != string(os.PathSeparator) {
+			t.Errorf("Unix root dir invalid: %s", root)
+		}
+	}
+}
 
 func TestProjectRoot(t *testing.T) {
 	cwd, _ := os.Getwd()
@@ -41,7 +58,7 @@ func TestProjectPath(t *testing.T) {
 		t.Run(filepath.Join(tt.relativePath...), func(t *testing.T) {
 			path := ProjectPath(tt.relativePath...)
 			if path != tt.expectedPath {
-				t.Errorf("ProjectPath(%s) Path=%s Expected Path=%s", tt.relativePath, path, tt.expectedPath)
+				t.Errorf("ProjectPath(%s) Path=%s Expected Path=%s", strings.Join(tt.relativePath, string(os.PathSeparator)), path, tt.expectedPath)
 			}
 		})
 	}

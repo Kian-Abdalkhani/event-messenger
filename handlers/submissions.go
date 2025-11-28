@@ -173,7 +173,12 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	var filename string
 
 	// Create uploads directory if it doesn't exist
-	os.MkdirAll("./data/uploads", os.ModePerm)
+	err = os.MkdirAll("./data/uploads", os.ModePerm)
+	if err != nil {
+		http.Error(w, "Error locating image directory", http.StatusInternalServerError)
+		slog.Error("Error creating uploads directory", "error", err)
+		return
+	}
 
 	// Create unique filename (replace all img extensions with .jpg)
 	baseFilename := filepath.Base(handler.Filename)

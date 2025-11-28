@@ -27,16 +27,25 @@ func StartDailyNotifications() {
 	for _, event := range events {
 		if event.EmailSent {
 			slog.Info(fmt.Sprintf("Skipping event %s - email already sent", event.Name))
-			event.MarkEventInactive()
+			err = event.MarkEventInactive()
+			if err != nil {
+				slog.Error("Error marking event as inactive", "event_name", event.Name, "error", err)
+			}
 			continue
 		}
 		err := sendEventNotification(&event)
 		if err != nil {
 			slog.Error("Could not sent notification for event", "event_name", event.Name, "recipient", event.RecipientEmail, "error", err)
-			event.MarkEventInactive()
+			err = event.MarkEventInactive()
+			if err != nil {
+				slog.Error("Error marking event as inactive", "event_name", event.Name, "error", err)
+			}
 			continue
 		}
-		event.MarkEventInactive()
+		err = event.MarkEventInactive()
+		if err != nil {
+			slog.Error("Error marking event as inactive", "event_name", event.Name, "error", err)
+		}
 	}
 
 }
@@ -73,7 +82,7 @@ func StartScheduler(hourToRun int) {
 			}
 
 			duration := time.Until(nextRun)
-			slog.Debug(fmt.Sprintf("Next notification check scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration))
+			slog.Debug(fmt.Sprintf("Next notification check scheduled for: %s (in %v)", nextRun.Format("2006-01-02 15:04:05"), duration.Round(time.Second)))
 
 			time.Sleep(duration)
 

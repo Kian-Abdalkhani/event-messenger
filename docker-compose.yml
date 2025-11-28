@@ -54,6 +54,19 @@ services:
       timeout: 3s
       retries: 5
 
+  test:
+    container_name: test-event-messenger
+    image: golang:1.25
+    working_dir: /app
+    build: .
+    network_mode: host
+    command: go test ./...
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+    profiles: ["test"]
+
 volumes:
   tailscale-socket:
   tailscale-state:
+  go-mod-cache:

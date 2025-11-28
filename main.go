@@ -12,6 +12,7 @@ import (
 	"event-messenger.com/logger"
 	"event-messenger.com/routes"
 	"event-messenger.com/scheduler"
+	"event-messenger.com/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -22,6 +23,7 @@ Future Improvements:
 */
 
 func init() {
+
 	// Check for GO_ENV
 	env := os.Getenv("GO_ENV")
 
@@ -41,7 +43,15 @@ func init() {
 		// Initialize logger
 		logger.InitLogger()
 		slog.Debug("Production mode loaded")
+	}
 
+	// Critical path checks that crash the program
+	uploadsDir := utils.ProjectPath("data", "uploads")
+	if err := os.MkdirAll(uploadsDir, 0755); err != nil {
+		log.Fatalf("Uploads directory error: %v", err)
+	}
+	if !utils.FolderExists(utils.ProjectPath("templates")) {
+		log.Fatalf("HTML Templates not found %s", utils.ProjectPath("templates"))
 	}
 
 	// Load web configurations

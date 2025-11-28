@@ -79,7 +79,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	eventDate, err := time.Parse("2006-01-02", r.FormValue("event_date"))
 	if err != nil {
 		http.Error(w, "Invalid event date format", http.StatusBadRequest)
-		slog.Error("Invalid event date format", "event_date", r.FormValue("event_date"))
+		slog.Error("Invalid event date format", "event_date", r.FormValue("event_date"), "error", err)
 		return
 	}
 
@@ -111,11 +111,12 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	err = event.SaveEvent()
 	if err != nil {
 		http.Error(w, "Failed to create event", http.StatusInternalServerError)
-		slog.Error("Failed to create event", "event_name", event.Name)
+		slog.Error("Failed to create event", "event_name", event.Name, "error", err)
 		return
 	}
 
 	http.Redirect(w, r, "/events/"+slug+"/created", http.StatusSeeOther)
+	slog.Info("Event successfully created", "event_name", event.Name)
 }
 
 // New handler for event creation success
@@ -128,7 +129,7 @@ func EventCreatedSuccess(w http.ResponseWriter, r *http.Request) {
 	event, err := models.GetEventBySlug(slug)
 	if err != nil {
 		http.Error(w, "Event not found", http.StatusNotFound)
-		slog.Error("Event not found", "event-slug", slug)
+		slog.Error("Event not found", "event-slug", slug, "error", err)
 		return
 	}
 
