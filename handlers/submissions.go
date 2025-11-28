@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/jpeg"
 	"log/slog"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -230,7 +231,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 
 	// Get saved file size for verification
 	fileInfo, _ := dst.Stat()
-	slog.Info("Successfully saved processed image: %s (size: %.2f KB)", filename, float64(fileInfo.Size())/1024)
+	slog.Info("Successfully saved processed image", "filename", filename, "KBs", math.Round(float64(fileInfo.Size())/1024))
 
 	renderTemplate(w, utils.ProjectPath("templates", "success.html"), data)
 
