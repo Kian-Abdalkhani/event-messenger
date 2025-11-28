@@ -3,10 +3,13 @@ package handlers
 import (
 	"bytes"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"event-messenger.com/utils"
 )
 
 var baseDir string
@@ -22,8 +25,14 @@ func init() {
 }
 
 func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}) {
-	// Make path absolute relative to executable
-	fullPath := filepath.Join(baseDir, templatePath)
+	// Check if it is an absolute path
+	var fullPath string
+	if filepath.IsAbs(templatePath) {
+		fullPath = templatePath
+	} else {
+		slog.Error("Ensure template path is absolute", "templatePath", templatePath)
+		fullPath = utils.ProjectPath(templatePath)
+	}
 
 	// Read and parse the HTML template
 	tmpl, err := template.ParseFiles(fullPath)
@@ -42,7 +51,7 @@ func renderTemplate(w http.ResponseWriter, templatePath string, data interface{}
 
 func RenderEmailTemplate(data any) (string, error) {
 	// Make path absolute relative to executable
-	fullPath := filepath.Join(baseDir, "templates/email_notification.html")
+	fullPath := utils.ProjectPath("templates", "email_notification.html")
 
 	tmpl, err := template.ParseFiles(fullPath)
 	if err != nil {

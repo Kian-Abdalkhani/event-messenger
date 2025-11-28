@@ -6,10 +6,10 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"time"
 
 	"event-messenger.com/db"
+	"event-messenger.com/utils"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -192,7 +192,7 @@ func (e *Event) deleteEventImages() error {
 			continue
 		}
 
-		fileRef := filepath.Join("./data/uploads/", submission.Filename)
+		fileRef := utils.ProjectPath("data", "uploads", submission.Filename)
 		if _, err = os.Stat(fileRef); err != nil {
 			slog.Error("submission image not found", "event_name", e.Name, "submission_name", submission.Name, "submission_img_ref", fileRef)
 		} else {

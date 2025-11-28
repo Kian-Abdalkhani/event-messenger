@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"event-messenger.com/models"
+	"event-messenger.com/utils"
 	"golang.org/x/image/draw"
 )
 
@@ -18,7 +19,6 @@ const (
 	MaxNameLength    = 100
 	MaxMessageLength = 500
 	MaxFileSize      = 10 << 20 // 10 MB
-	UploadDir        = "./data/uploads"
 	MaxImageWidth    = 800
 )
 
@@ -66,7 +66,7 @@ func SubmissionFormHandler(w http.ResponseWriter, r *http.Request, slug string) 
 		EventSlug:     slug,
 	}
 
-	renderTemplate(w, "./templates/submission_form.html", data)
+	renderTemplate(w, utils.ProjectPath("templates", "submission_form.html"), data)
 
 }
 
@@ -180,7 +180,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	ext := filepath.Ext(baseFilename)
 	nameWithoutExt := baseFilename[:len(baseFilename)-len(ext)]
 	filename = fmt.Sprintf("%d_%s.jpg", time.Now().Unix(), nameWithoutExt)
-	filePath := filepath.Join("./data/uploads", filename)
+	filePath := utils.ProjectPath("data", "uploads", filename)
 
 	// Save file
 	dst, err := os.Create(filePath)
@@ -227,7 +227,7 @@ func SubmissionHandler(w http.ResponseWriter, r *http.Request, slug string) {
 	fileInfo, _ := dst.Stat()
 	slog.Info("Successfully saved processed image: %s (size: %.2f KB)", filename, float64(fileInfo.Size())/1024)
 
-	renderTemplate(w, "./templates/success.html", data)
+	renderTemplate(w, utils.ProjectPath("templates", "success.html"), data)
 
 	slog.Info("Received submission", "name", name)
 }
@@ -240,6 +240,6 @@ func ViewSubmissionsByEvent(w http.ResponseWriter, r *http.Request, slug string)
 		return
 	}
 
-	renderTemplate(w, "./templates/view_messages.html", submissions)
+	renderTemplate(w, utils.ProjectPath("templates", "view_messages.html"), submissions)
 
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"event-messenger.com/models"
+	"event-messenger.com/utils"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +22,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Events: events,
 	}
 
-	renderTemplate(w, "./templates/home.html", data)
+	renderTemplate(w, utils.ProjectPath("templates", "home.html"), data)
 
 }

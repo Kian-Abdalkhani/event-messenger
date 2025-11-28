@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"event-messenger.com/emailutil"
 	"event-messenger.com/models"
+	"event-messenger.com/slugutil"
 	"event-messenger.com/utils"
 )
 
@@ -25,7 +27,7 @@ func CreateEventForm(w http.ResponseWriter, r *http.Request) {
 		Events: events,
 	}
 
-	renderTemplate(w, "./templates/create_event_form.html", data)
+	renderTemplate(w, utils.ProjectPath("templates", "create_event_form.html"), data)
 
 }
 
@@ -45,7 +47,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// grab values from the form
 	name := r.FormValue("name")
-	slug := utils.GenerateSlug(name) // Auto-generate from name
+	slug := slugutil.GenerateSlug(name) // Auto-generate from name
 	description := r.FormValue("description")
 	coordinator := r.FormValue("coordinator")
 	coordinatorContact := strings.TrimSpace(r.FormValue("coordinator_contact"))
@@ -59,14 +61,14 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = utils.ValidateEmail(recipientContact); err != nil {
+	if err = emailutil.ValidateEmail(recipientContact); err != nil {
 		http.Error(w, "Invalid recipient Email", http.StatusBadRequest)
 		slog.Error("Invalid recipient Email", "email", recipientContact)
 		return
 	}
 
 	if coordinatorContact != "" {
-		if err = utils.ValidateEmail(coordinatorContact); err != nil {
+		if err = emailutil.ValidateEmail(coordinatorContact); err != nil {
 			http.Error(w, "Invalid Coordinator Email", http.StatusBadRequest)
 			slog.Error("Invalid Coordinator Email", "email", coordinatorContact)
 			return
@@ -138,5 +140,5 @@ func EventCreatedSuccess(w http.ResponseWriter, r *http.Request) {
 		FunnelURL: event.FunnelURL,
 	}
 
-	renderTemplate(w, "./templates/event_created_success.html", data)
+	renderTemplate(w, utils.ProjectPath("templates", "event_created_success.html"), data)
 }
