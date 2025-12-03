@@ -31,6 +31,7 @@ COPY --from=builder /app/event-messenger .
 
 # Copy templates and static files
 COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/static ./static
 
 # Create data directory for uploads and database
 RUN mkdir -p /app/data/uploads
